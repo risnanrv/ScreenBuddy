@@ -24,7 +24,7 @@ namespace ScreenBuddy
     /// Interaction logic for App.xaml
     /// Primary composition root and application lifecycle coordinator for ScreenBuddy.
     /// </summary>
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         private static Mutex? _mutex;
         private const string MutexName = "ScreenBuddy_SingleInstance_Mutex_9A8B7C";

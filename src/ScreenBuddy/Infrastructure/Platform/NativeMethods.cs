@@ -6,7 +6,7 @@ namespace ScreenBuddy.Infrastructure.Platform
     /// <summary>
     /// P/Invoke Win32 declarations for window Z-order enforcement and monitor metrics.
     /// </summary>
-    internal static partial class NativeMethods
+    internal static class NativeMethods
     {
         public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 
@@ -15,9 +15,9 @@ namespace ScreenBuddy.Infrastructure.Platform
         public const uint SWP_NOACTIVATE = 0x0010;
         public const uint SWP_SHOWWINDOW = 0x0040;
 
-        [LibraryImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static partial bool SetWindowPos(
+        public static extern bool SetWindowPos(
             IntPtr hWnd,
             IntPtr hWndInsertAfter,
             int X,
