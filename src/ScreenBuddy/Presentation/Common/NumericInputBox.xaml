@@ -7,8 +7,9 @@
             Background="{StaticResource color-base-850}"
             BorderBrush="{StaticResource color-border-subtle}"
             BorderThickness="1"
-            CornerRadius="{StaticResource RadiusSmall}">
-        <Grid Padding="12,0,12,0">
+            CornerRadius="{StaticResource RadiusSmall}"
+            Padding="12,0,12,0">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />

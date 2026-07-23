@@ -14,8 +14,9 @@
             CornerRadius="{StaticResource RadiusLarge}"
             BorderBrush="{StaticResource color-border-subtle}"
             BorderThickness="1"
-            Margin="8">
-        <Grid Padding="36,32,36,32">
+            Margin="8"
+            Padding="36,32,36,32">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
                 <RowDefinition Height="*" />    <!-- Form -->
