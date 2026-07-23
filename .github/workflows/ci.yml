@@ -1,0 +1,32 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore ScreenBuddy.sln
+
+      - name: Build Solution
+        run: dotnet build ScreenBuddy.sln --configuration Release --no-restore
+
+      - name: Run Domain Unit Tests
+        run: dotnet test tests/ScreenBuddy.Domain.Tests/ScreenBuddy.Domain.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=domain-tests.trx"
+
+      - name: Run Application Unit Tests
+        run: dotnet test tests/ScreenBuddy.Application.Tests/ScreenBuddy.Application.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=application-tests.trx"

@@ -1,0 +1,112 @@
+<Window x:Class="ScreenBuddy.Presentation.FirstRun.FirstRunWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:ScreenBuddy.Presentation.Common"
+        Title="Welcome to ScreenBuddy"
+        Width="440" Height="500"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
+
+    <Border Background="{StaticResource color-base-750}"
+            CornerRadius="{StaticResource RadiusLarge}"
+            BorderBrush="{StaticResource color-border-subtle}"
+            BorderThickness="1"
+            Margin="8">
+        <Grid Padding="36,32,36,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Header -->
+                <RowDefinition Height="*" />    <!-- Form -->
+                <RowDefinition Height="Auto" /> <!-- Action -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                <TextBlock Text="Welcome to ScreenBuddy"
+                           Foreground="{StaticResource color-text-primary}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           FontFamily="{StaticResource FontFamilyPrimary}"
+                           Margin="0,0,0,8" />
+                <TextBlock Text="Your silent desktop companion for healthier screen time."
+                           Foreground="{StaticResource color-text-secondary}"
+                           FontSize="{StaticResource FontSizeBody}"
+                           FontFamily="{StaticResource FontFamilyPrimary}"
+                           TextWrapping="Wrap"
+                           LineHeight="22" />
+            </StackPanel>
+
+            <!-- Form -->
+            <StackPanel Grid.Row="1">
+                <!-- Work Duration -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Work duration"
+                               Foreground="{StaticResource color-text-primary}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               FontWeight="Medium"
+                               FontFamily="{StaticResource FontFamilyPrimary}" />
+                    <TextBlock Text="Minutes of focus before a break"
+                               Foreground="{StaticResource color-text-secondary}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               FontFamily="{StaticResource FontFamilyPrimary}"
+                               Margin="0,2,0,8" />
+                    <common:NumericInputBox Value="{Binding WorkDurationMinutes, Mode=TwoWay}"
+                                           MinValue="1" MaxValue="120"
+                                           Suffix="minutes" />
+                </StackPanel>
+
+                <!-- Break Duration -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Break duration"
+                               Foreground="{StaticResource color-text-primary}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               FontWeight="Medium"
+                               FontFamily="{StaticResource FontFamilyPrimary}" />
+                    <TextBlock Text="Minutes to rest between sessions"
+                               Foreground="{StaticResource color-text-secondary}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               FontFamily="{StaticResource FontFamilyPrimary}"
+                               Margin="0,2,0,8" />
+                    <common:NumericInputBox Value="{Binding BreakDurationMinutes, Mode=TwoWay}"
+                                           MinValue="1" MaxValue="60"
+                                           Suffix="minutes" />
+                </StackPanel>
+
+                <!-- Launch on Startup -->
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Start with Windows"
+                                   Foreground="{StaticResource color-text-primary}"
+                                   FontSize="{StaticResource FontSizeBody}"
+                                   FontWeight="Medium"
+                                   FontFamily="{StaticResource FontFamilyPrimary}" />
+                        <TextBlock Text="Ready when you sit down"
+                                   Foreground="{StaticResource color-text-secondary}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   FontFamily="{StaticResource FontFamilyPrimary}"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+
+                    <common:ToggleSwitch Grid.Column="1"
+                                         VerticalAlignment="Center"
+                                         IsChecked="{Binding LaunchOnStartup, Mode=TwoWay}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- Action Button -->
+            <Button Grid.Row="2"
+                    Content="Start using ScreenBuddy"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Command="{Binding StartCommand}"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,24,0,0" />
+        </Grid>
+    </Border>
+</Window>

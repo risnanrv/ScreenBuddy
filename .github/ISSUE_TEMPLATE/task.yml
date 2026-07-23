@@ -1,0 +1,52 @@
+name: Implementation Task
+description: An engineering task traced to a Phase 1 requirement
+labels: ["task"]
+body:
+  - type: input
+    id: requirement
+    attributes:
+      label: Phase 1 requirement(s)
+      placeholder: "e.g. FR-001, NFR-001"
+    validations:
+      required: true
+
+  - type: input
+    id: component
+    attributes:
+      label: Phase 2 component
+      placeholder: "e.g. TimerEngine"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task description
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checkboxes that must all pass for this task to be Done.
+    validations:
+      required: true
+
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate (hours)
+      placeholder: "e.g. 4"
+
+  - type: input
+    id: sprint
+    attributes:
+      label: Target sprint
+      placeholder: "e.g. Sprint 2"
+
+  - type: input
+    id: depends-on
+    attributes:
+      label: Depends on (issue numbers)
+      placeholder: "e.g. #4, #7"

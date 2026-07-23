@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Base / Neutral Colors -->
+    <Color x:Key="ColorBase900">#0C0E14</Color>
+    <Color x:Key="ColorBase850">#151923</Color>
+    <Color x:Key="ColorBase750">#1C2133</Color>
+    <Color x:Key="ColorBase700">#252C42</Color>
+    <Color x:Key="ColorBase600">#36415E</Color>
+
+    <SolidColorBrush x:Key="color-base-900" Color="{StaticResource ColorBase900}" />
+    <SolidColorBrush x:Key="color-base-850" Color="{StaticResource ColorBase850}" />
+    <SolidColorBrush x:Key="color-base-750" Color="{StaticResource ColorBase750}" />
+    <SolidColorBrush x:Key="color-base-700" Color="{StaticResource ColorBase700}" />
+    <SolidColorBrush x:Key="color-base-600" Color="{StaticResource ColorBase600}" />
+
+    <!-- Text Colors -->
+    <Color x:Key="ColorTextPrimary">#F0F2F7</Color>
+    <Color x:Key="ColorTextSecondary">#A8B0C2</Color>
+    <Color x:Key="ColorTextTertiary">#6B7591</Color>
+    <Color x:Key="ColorTextDisabled">#434B61</Color>
+
+    <SolidColorBrush x:Key="color-text-primary" Color="{StaticResource ColorTextPrimary}" />
+    <SolidColorBrush x:Key="color-text-secondary" Color="{StaticResource ColorTextSecondary}" />
+    <SolidColorBrush x:Key="color-text-tertiary" Color="{StaticResource ColorTextTertiary}" />
+    <SolidColorBrush x:Key="color-text-disabled" Color="{StaticResource ColorTextDisabled}" />
+
+    <!-- Accent Colors (Sage Mint) -->
+    <Color x:Key="ColorAccent400">#6EE7B7</Color>
+    <Color x:Key="ColorAccent500">#34D399</Color>
+    <Color x:Key="ColorAccent600">#059669</Color>
+    <Color x:Key="ColorAccentBg">#122B22</Color>
+
+    <SolidColorBrush x:Key="color-accent-400" Color="{StaticResource ColorAccent400}" />
+    <SolidColorBrush x:Key="color-accent-500" Color="{StaticResource ColorAccent500}" />
+    <SolidColorBrush x:Key="color-accent-600" Color="{StaticResource ColorAccent600}" />
+    <SolidColorBrush x:Key="color-accent-bg" Color="{StaticResource ColorAccentBg}" />
+
+    <!-- State & Feedback Colors -->
+    <Color x:Key="ColorStatusError">#F87171</Color>
+    <Color x:Key="ColorStatusErrorBg">#2D1517</Color>
+    <Color x:Key="ColorStatusPaused">#FBBF24</Color>
+    <Color x:Key="ColorFocusRing">#6EE7B7</Color>
+
+    <SolidColorBrush x:Key="color-status-error" Color="{StaticResource ColorStatusError}" />
+    <SolidColorBrush x:Key="color-status-error-bg" Color="{StaticResource ColorStatusErrorBg}" />
+    <SolidColorBrush x:Key="color-status-paused" Color="{StaticResource ColorStatusPaused}" />
+    <SolidColorBrush x:Key="color-focus-ring" Color="{StaticResource ColorFocusRing}" />
+
+    <!-- Border & Overlay Brushes -->
+    <SolidColorBrush x:Key="color-border-subtle" Color="#252C42" />
+    <SolidColorBrush x:Key="color-border-focus" Color="#6EE7B7" />
+
+</ResourceDictionary>

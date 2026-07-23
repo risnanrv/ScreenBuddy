@@ -1,0 +1,39 @@
+<UserControl x:Class="ScreenBuddy.Presentation.Common.NumericInputBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <Border x:Name="InputBorder"
+            Height="44"
+            Background="{StaticResource color-base-850}"
+            BorderBrush="{StaticResource color-border-subtle}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource RadiusSmall}">
+        <Grid Padding="12,0,12,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="ValueTextBox"
+                     Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Foreground="{StaticResource color-text-primary}"
+                     FontSize="{StaticResource FontSizeBody}"
+                     FontFamily="{StaticResource FontFamilyPrimary}"
+                     PreviewKeyDown="OnTextBoxPreviewKeyDown"
+                     LostFocus="OnTextBoxLostFocus"
+                     GotFocus="OnTextBoxGotFocus" />
+
+            <TextBlock x:Name="SuffixTextBlock"
+                       Grid.Column="1"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource color-text-tertiary}"
+                       FontSize="{StaticResource FontSizeCaption}"
+                       FontFamily="{StaticResource FontFamilyPrimary}"
+                       Margin="8,0,0,0"
+                       IsHitTestVisible="False" />
+        </Grid>
+    </Border>
+</UserControl>

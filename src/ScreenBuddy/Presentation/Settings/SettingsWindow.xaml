@@ -1,0 +1,129 @@
+<Window x:Class="ScreenBuddy.Presentation.Settings.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:common="clr-namespace:ScreenBuddy.Presentation.Common"
+        Title="Settings"
+        Width="420" Height="440"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        KeyDown="OnWindowKeyDown">
+
+    <Border Background="{StaticResource color-base-750}"
+            CornerRadius="{StaticResource RadiusLarge}"
+            BorderBrush="{StaticResource color-border-subtle}"
+            BorderThickness="1"
+            Margin="8">
+        <Grid Padding="32,24,32,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Header -->
+                <RowDefinition Height="*" />    <!-- Form Body -->
+                <RowDefinition Height="Auto" /> <!-- Actions -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <TextBlock Text="Settings"
+                           Foreground="{StaticResource color-text-primary}"
+                           FontSize="{StaticResource FontSizeHeading}"
+                           FontWeight="SemiBold"
+                           FontFamily="{StaticResource FontFamilyPrimary}"
+                           VerticalAlignment="Center" />
+
+                <Button HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{StaticResource color-text-secondary}"
+                        FontSize="18"
+                        Content="✕"
+                        Cursor="Hand"
+                        Command="{Binding CancelCommand}" />
+            </Grid>
+
+            <!-- Form Body -->
+            <StackPanel Grid.Row="1">
+                <!-- Work Duration -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Work duration"
+                               Foreground="{StaticResource color-text-primary}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               FontWeight="Medium"
+                               FontFamily="{StaticResource FontFamilyPrimary}" />
+                    <TextBlock Text="Minutes of focus before a break"
+                               Foreground="{StaticResource color-text-secondary}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               FontFamily="{StaticResource FontFamilyPrimary}"
+                               Margin="0,2,0,8" />
+                    <common:NumericInputBox Value="{Binding WorkDurationMinutes, Mode=TwoWay}"
+                                           MinValue="1" MaxValue="120"
+                                           Suffix="minutes" />
+                </StackPanel>
+
+                <!-- Break Duration -->
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Break duration"
+                               Foreground="{StaticResource color-text-primary}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               FontWeight="Medium"
+                               FontFamily="{StaticResource FontFamilyPrimary}" />
+                    <TextBlock Text="Minutes to rest between sessions"
+                               Foreground="{StaticResource color-text-secondary}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               FontFamily="{StaticResource FontFamilyPrimary}"
+                               Margin="0,2,0,8" />
+                    <common:NumericInputBox Value="{Binding BreakDurationMinutes, Mode=TwoWay}"
+                                           MinValue="1" MaxValue="60"
+                                           Suffix="minutes" />
+                </StackPanel>
+
+                <!-- Launch on Startup -->
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Start with Windows"
+                                   Foreground="{StaticResource color-text-primary}"
+                                   FontSize="{StaticResource FontSizeBody}"
+                                   FontWeight="Medium"
+                                   FontFamily="{StaticResource FontFamilyPrimary}" />
+                        <TextBlock Text="Ready when you sit down"
+                                   Foreground="{StaticResource color-text-secondary}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   FontFamily="{StaticResource FontFamilyPrimary}"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+
+                    <common:ToggleSwitch Grid.Column="1"
+                                         VerticalAlignment="Center"
+                                         IsChecked="{Binding LaunchOnStartup, Mode=TwoWay}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- Actions -->
+            <Grid Grid.Row="2" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Content="Cancel"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Command="{Binding CancelCommand}" />
+
+                <Button Grid.Column="2"
+                        Content="Save settings"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding SaveCommand}" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

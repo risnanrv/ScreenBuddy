@@ -1,0 +1,65 @@
+<Window x:Class="ScreenBuddy.Presentation.Overlay.BreakOverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ScreenBuddy Break"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Background="{StaticResource color-base-900}"
+        ResizeMode="NoResize"
+        Focusable="True"
+        PreviewKeyDown="OnWindowPreviewKeyDown">
+
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <!-- Center Content Stack -->
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MaxWidth="560">
+
+            <!-- 1. Motivational Break Message -->
+            <TextBlock Text="{Binding MessageText}"
+                       Foreground="{StaticResource color-text-primary}"
+                       FontSize="{StaticResource FontSizeMessage}"
+                       FontWeight="Light"
+                       FontFamily="{StaticResource FontFamilyPrimary}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       LineHeight="38"
+                       Margin="0,0,0,80" />
+
+            <!-- 2. Countdown Timer Numerals -->
+            <TextBlock Text="{Binding CountdownText}"
+                       Foreground="{StaticResource color-accent-400}"
+                       FontSize="{StaticResource FontSizeCountdown}"
+                       FontWeight="Light"
+                       FontFamily="{StaticResource FontFamilyPrimary}"
+                       TextAlignment="Center"
+                       Margin="0,0,0,64" />
+
+            <!-- 3. Skip Break Affordance -->
+            <Button Command="{Binding SkipCommand}"
+                    HorizontalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock x:Name="SkipText"
+                                   Text="Skip this break"
+                                   Foreground="{StaticResource color-text-tertiary}"
+                                   FontSize="{StaticResource FontSizeBody}"
+                                   FontWeight="Medium"
+                                   FontFamily="{StaticResource FontFamilyPrimary}" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SkipText" Property="Foreground" Value="{StaticResource color-text-primary}" />
+                                <Setter TargetName="SkipText" Property="TextDecorations" Value="Underline" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

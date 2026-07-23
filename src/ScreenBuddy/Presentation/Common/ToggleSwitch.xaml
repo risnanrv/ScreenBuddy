@@ -1,0 +1,22 @@
+<UserControl x:Class="ScreenBuddy.Presentation.Common.ToggleSwitch"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="RootElement">
+    <Grid Cursor="Hand" Background="Transparent" MouseLeftButtonDown="OnGridMouseLeftButtonDown">
+        <Border x:Name="TrackBorder"
+                Width="44" Height="24"
+                CornerRadius="12"
+                Background="{StaticResource color-base-700}"
+                BorderBrush="{StaticResource color-border-subtle}"
+                BorderThickness="1">
+            <Canvas Width="44" Height="24">
+                <Border x:Name="ThumbBorder"
+                        Width="18" Height="18"
+                        Canvas.Left="3" Canvas.Top="2"
+                        CornerRadius="9"
+                        Background="{StaticResource color-text-secondary}">
+                </Border>
+            </Canvas>
+        </Border>
+    </Grid>
+</UserControl>
