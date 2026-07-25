@@ -11,6 +11,7 @@ namespace ScreenBuddy.Domain.Timer
         event EventHandler<int>? TimerTick;
         event EventHandler? WorkTimerExpired;
         event EventHandler? BreakTimerExpired;
+        event EventHandler? SnoozeTimerExpired;
         event EventHandler<TimerSnapshot>? PersistStateRequested;
 
         SessionState CurrentPhase { get; }
@@ -23,6 +24,7 @@ namespace ScreenBuddy.Domain.Timer
         void Reset(int workDurationSeconds);
         void BeginBreak(int breakDurationSeconds);
         void EndBreak();
+        void Snooze(int snoozeDurationSeconds);
         TimerSnapshot CreateSnapshot();
         void ReconcileSleepGap(TimerSnapshot lastSnapshot);
     }

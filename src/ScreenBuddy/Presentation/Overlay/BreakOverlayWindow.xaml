@@ -9,13 +9,36 @@
         Background="{StaticResource color-base-900}"
         ResizeMode="NoResize"
         Focusable="True"
-        PreviewKeyDown="OnWindowPreviewKeyDown">
+        PreviewKeyDown="OnWindowPreviewKeyDown"
+        PreviewKeyUp="OnWindowPreviewKeyUp">
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <!-- Top-Left Menu (⋯) -->
+        <Menu HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Margin="24,20,0,0"
+              Background="Transparent">
+            <MenuItem Header="⋯"
+                      Foreground="{StaticResource color-text-secondary}"
+                      FontSize="20"
+                      FontWeight="Bold"
+                      Padding="8,4,8,4">
+                <MenuItem Header="Minimize break"
+                          Command="{Binding MinimizeCommand}"
+                          Foreground="{StaticResource color-base-900}"
+                          FontSize="{StaticResource FontSizeBody}" />
+                <Separator />
+                <MenuItem Header="Emergency Pause (ESC)"
+                          Command="{Binding EmergencyEscapeCommand}"
+                          Foreground="{StaticResource color-base-900}"
+                          FontSize="{StaticResource FontSizeBody}" />
+            </MenuItem>
+        </Menu>
+
         <!-- Center Content Stack -->
         <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    MaxWidth="560">
+                    MaxWidth="600">
 
             <!-- 1. Motivational Break Message -->
             <TextBlock Text="{Binding MessageText}"
@@ -25,24 +48,62 @@
                        FontFamily="{StaticResource FontFamilyPrimary}"
                        TextAlignment="Center"
                        TextWrapping="Wrap"
-                       LineHeight="38"
-                       Margin="0,0,0,80" />
+                       LineHeight="40"
+                       Margin="0,0,0,64" />
 
             <!-- 2. Countdown Timer Numerals -->
             <TextBlock Text="{Binding CountdownText}"
-                       Foreground="{StaticResource color-accent-400}"
+                       Foreground="{StaticResource color-text-primary}"
                        FontSize="{StaticResource FontSizeCountdown}"
                        FontWeight="Light"
                        FontFamily="{StaticResource FontFamilyPrimary}"
                        TextAlignment="Center"
-                       Margin="0,0,0,64" />
+                       Margin="0,0,0,48" />
 
-            <!-- 3. Skip Break Affordance -->
+            <!-- 3. Snooze Options Row -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,32">
+                <TextBlock Text="Snooze:"
+                           Foreground="{StaticResource color-text-tertiary}"
+                           FontSize="{StaticResource FontSizeBody}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0" />
+
+                <Button Content="1m"
+                        Command="{Binding SnoozeCommand}"
+                        CommandParameter="1"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Width="52" Height="36" Padding="0" Margin="0,0,8,0" />
+                <Button Content="2m"
+                        Command="{Binding SnoozeCommand}"
+                        CommandParameter="2"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Width="52" Height="36" Padding="0" Margin="0,0,8,0" />
+                <Button Content="3m"
+                        Command="{Binding SnoozeCommand}"
+                        CommandParameter="3"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Width="52" Height="36" Padding="0" Margin="0,0,8,0" />
+                <Button Content="4m"
+                        Command="{Binding SnoozeCommand}"
+                        CommandParameter="4"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Width="52" Height="36" Padding="0" Margin="0,0,8,0" />
+                <Button Content="5m"
+                        Command="{Binding SnoozeCommand}"
+                        CommandParameter="5"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Width="52" Height="36" Padding="0" />
+            </StackPanel>
+
+            <!-- 4. Skip Break Affordance -->
             <Button Command="{Binding SkipCommand}"
                     HorizontalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
-                    Cursor="Hand">
+                    Cursor="Hand"
+                    Margin="0,12,0,0">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <TextBlock x:Name="SkipText"

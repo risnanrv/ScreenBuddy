@@ -37,11 +37,32 @@ namespace ScreenBuddy.Presentation.Overlay
         }
 
         [RelayCommand]
-        private async Task SkipAsync()
+        private void Skip()
         {
-            // Phase 3 §10 IP-005: 100ms intentional delay to prevent accidental click-through skips
-            await Task.Delay(100);
             _sessionCoordinator.Send(SessionCommand.SkipBreak);
+        }
+
+        [RelayCommand]
+        private void Snooze(string? minutesString)
+        {
+            int minutes = 5;
+            if (int.TryParse(minutesString, out int parsed))
+            {
+                minutes = Math.Clamp(parsed, 1, 10);
+            }
+            _sessionCoordinator.Snooze(minutes);
+        }
+
+        [RelayCommand]
+        private void Minimize()
+        {
+            _sessionCoordinator.Send(SessionCommand.MinimizeBreak);
+        }
+
+        [RelayCommand]
+        private void EmergencyEscape()
+        {
+            _sessionCoordinator.Send(SessionCommand.EmergencyEscape);
         }
     }
 }

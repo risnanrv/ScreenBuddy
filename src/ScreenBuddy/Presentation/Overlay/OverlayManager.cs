@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
 using ScreenBuddy.Application;
 using ScreenBuddy.Domain.Models;
 using ScreenBuddy.Domain.Timer;
@@ -11,12 +12,14 @@ namespace ScreenBuddy.Presentation.Overlay
 {
     /// <summary>
     /// Manages per-monitor break overlay window lifecycle, Z-order enforcement, and display topology changes.
+    /// Ensures global multi-monitor coordination and fail-open user protection.
     /// </summary>
     public sealed class OverlayManager : IOverlayManager
     {
         private readonly ISessionCoordinator _sessionCoordinator;
         private readonly ITimerEngine _timerEngine;
         private readonly IDisplayMonitor _displayMonitor;
+        private readonly ILogger<OverlayManager>? _logger;
 
         private readonly List<BreakOverlayWindow> _activeWindows = new();
         private readonly DispatcherTimer _zOrderTimer;
@@ -26,11 +29,13 @@ namespace ScreenBuddy.Presentation.Overlay
         public OverlayManager(
             ISessionCoordinator sessionCoordinator,
             ITimerEngine timerEngine,
-            IDisplayMonitor displayMonitor)
+            IDisplayMonitor displayMonitor,
+            ILogger<OverlayManager>? logger = null)
         {
             _sessionCoordinator = sessionCoordinator ?? throw new ArgumentNullException(nameof(sessionCoordinator));
             _timerEngine = timerEngine ?? throw new ArgumentNullException(nameof(timerEngine));
             _displayMonitor = displayMonitor ?? throw new ArgumentNullException(nameof(displayMonitor));
+            _logger = logger;
 
             _sessionCoordinator.BreakStarted += OnBreakStarted;
             _sessionCoordinator.BreakEnded += OnBreakEnded;
@@ -46,13 +51,21 @@ namespace ScreenBuddy.Presentation.Overlay
 
         public void ShowBreak(BreakMessage message)
         {
-            _currentMessage = message;
-            _sharedViewModel = new BreakOverlayViewModel(_sessionCoordinator);
-            _sharedViewModel.SetMessage(message.Text);
-            _sharedViewModel.UpdateCountdown(_timerEngine.RemainingSeconds);
+            try
+            {
+                _currentMessage = message;
+                _sharedViewModel = new BreakOverlayViewModel(_sessionCoordinator);
+                _sharedViewModel.SetMessage(message.Text);
+                _sharedViewModel.UpdateCountdown(_timerEngine.RemainingSeconds);
 
-            RecreateOverlayWindows();
-            _zOrderTimer.Start();
+                RecreateOverlayWindows();
+                _zOrderTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to show break overlay. Executing fail-open safety recovery.");
+                ExecuteFailOpenRecovery();
+            }
         }
 
         public void HideBreak()
@@ -66,14 +79,23 @@ namespace ScreenBuddy.Presentation.Overlay
                 _activeWindows.Clear();
             }
 
-            Task.Run(async () =>
+            if (windowsToClose.Count == 0)
+            {
+                return;
+            }
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 foreach (var window in windowsToClose)
                 {
-                    await window.Dispatcher.InvokeAsync(async () =>
+                    try
                     {
-                        await window.FadeOutAndCloseAsync();
-                    });
+                        window.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogWarning(ex, "Error while closing overlay window.");
+                    }
                 }
             });
         }
@@ -89,7 +111,14 @@ namespace ScreenBuddy.Presentation.Overlay
             {
                 foreach (var win in _activeWindows)
                 {
-                    win.Close();
+                    try
+                    {
+                        win.Close();
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
                 }
                 _activeWindows.Clear();
 
@@ -114,6 +143,12 @@ namespace ScreenBuddy.Presentation.Overlay
                     window.Show();
                 }
             }
+        }
+
+        private void ExecuteFailOpenRecovery()
+        {
+            HideBreak();
+            _sessionCoordinator.Send(SessionCommand.Pause);
         }
 
         private void OnBreakStarted(object? sender, BreakMessage message)

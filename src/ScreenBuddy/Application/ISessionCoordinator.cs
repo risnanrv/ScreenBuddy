@@ -16,6 +16,7 @@ namespace ScreenBuddy.Application
         AppSettings CurrentSettings { get; }
 
         bool Send(SessionCommand command);
+        bool Snooze(int snoozeMinutes);
         void HandleWakeFromSleep(TimerSnapshot? lastSnapshot);
     }
 }

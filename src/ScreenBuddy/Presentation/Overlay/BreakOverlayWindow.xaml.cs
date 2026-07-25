@@ -3,64 +3,27 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using ScreenBuddy.Infrastructure.Platform;
 
 namespace ScreenBuddy.Presentation.Overlay
 {
     public partial class BreakOverlayWindow : Window
     {
-        private bool _isClosing;
+        private DispatcherTimer? _escTimer;
+        private DateTime _escPressedStart;
 
         public BreakOverlayWindow(BreakOverlayViewModel viewModel)
         {
             InitializeComponent();
             DataContext = viewModel;
-            Opacity = 0;
-
             Loaded += OnWindowLoaded;
         }
 
         private void OnWindowLoaded(object sender, RoutedEventArgs e)
         {
             EnforceTopmostZOrder();
-
-            if (SystemParameters.ClientAreaAnimation)
-            {
-                var fadeIn = (Storyboard)FindResource("FadeInStoryboard");
-                fadeIn.Begin(this);
-            }
-            else
-            {
-                Opacity = 1.0;
-            }
-        }
-
-        public async Task FadeOutAndCloseAsync()
-        {
-            if (_isClosing)
-            {
-                return;
-            }
-            _isClosing = true;
-
-            if (SystemParameters.ClientAreaAnimation)
-            {
-                var tcs = new TaskCompletionSource();
-                var fadeOut = (Storyboard)FindResource("FadeOutStoryboard");
-                EventHandler? completedHandler = null;
-                completedHandler = (s, e) =>
-                {
-                    fadeOut.Completed -= completedHandler;
-                    tcs.SetResult();
-                };
-                fadeOut.Completed += completedHandler;
-                fadeOut.Begin(this);
-
-                await tcs.Task;
-            }
-
-            Close();
+            Focus();
         }
 
         public void EnforceTopmostZOrder()
@@ -85,10 +48,58 @@ namespace ScreenBuddy.Presentation.Overlay
 
         private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Intercept Alt+F4 (System key F4) and Escape
-            if ((e.Key == Key.System && e.SystemKey == Key.F4) || e.Key == Key.Escape)
+            // Intercept Alt+F4 (System key F4)
+            if (e.Key == Key.System && e.SystemKey == Key.F4)
             {
                 e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+
+                if (_escTimer == null)
+                {
+                    _escPressedStart = DateTime.UtcNow;
+                    _escTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(100)
+                    };
+                    _escTimer.Tick += OnEscTimerTick;
+                    _escTimer.Start();
+                }
+            }
+        }
+
+        private void OnWindowPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                StopEscTimer();
+            }
+        }
+
+        private void OnEscTimerTick(object? sender, EventArgs e)
+        {
+            if ((DateTime.UtcNow - _escPressedStart).TotalSeconds >= 2.5)
+            {
+                StopEscTimer();
+                if (DataContext is BreakOverlayViewModel vm)
+                {
+                    vm.EmergencyEscapeCommand.Execute(null);
+                }
+            }
+        }
+
+        private void StopEscTimer()
+        {
+            if (_escTimer != null)
+            {
+                _escTimer.Stop();
+                _escTimer.Tick -= OnEscTimerTick;
+                _escTimer = null;
             }
         }
     }

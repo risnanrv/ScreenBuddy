@@ -43,14 +43,15 @@ namespace ScreenBuddy.Presentation.Tray
 
         public void UpdateRemainingTime(int remainingSeconds)
         {
-            int minutes = remainingSeconds / 60;
-            int seconds = remainingSeconds % 60;
+            int minutes = Math.Max(0, remainingSeconds / 60);
+            int seconds = Math.Max(0, remainingSeconds % 60);
 
             SessionState state = _sessionCoordinator.CurrentState;
             StatusText = state switch
             {
                 SessionState.Working => $"Working — {minutes:D2}:{seconds:D2} remaining",
-                SessionState.Paused => $"Paused — {minutes:D2}:{seconds:D2} remaining",
+                SessionState.Paused => "ScreenBuddy is Paused",
+                SessionState.Snoozed => $"Snoozed — {minutes:D2}:{seconds:D2} remaining",
                 SessionState.Break => $"On Break — {minutes:D2}:{seconds:D2} remaining",
                 _ => "ScreenBuddy — Ready"
             };
@@ -58,15 +59,16 @@ namespace ScreenBuddy.Presentation.Tray
 
         private void UpdateStateFlags(SessionState state)
         {
-            CanPause = state == SessionState.Working;
+            CanPause = state is SessionState.Working or SessionState.Break or SessionState.Snoozed;
             CanResume = state == SessionState.Paused;
             CanStart = state is SessionState.Stopped or SessionState.Paused;
-            CanReset = state is SessionState.Working or SessionState.Paused;
+            CanReset = state is SessionState.Working or SessionState.Paused or SessionState.Snoozed;
 
             StatusText = state switch
             {
                 SessionState.Working => "Working",
-                SessionState.Paused => "Paused",
+                SessionState.Paused => "ScreenBuddy is Paused",
+                SessionState.Snoozed => "Break Snoozed",
                 SessionState.Break => "On Break",
                 _ => "ScreenBuddy — Ready"
             };
@@ -87,7 +89,7 @@ namespace ScreenBuddy.Presentation.Tray
         [RelayCommand]
         private void TogglePauseResume()
         {
-            if (_sessionCoordinator.CurrentState == SessionState.Working)
+            if (_sessionCoordinator.CurrentState is SessionState.Working or SessionState.Break or SessionState.Snoozed)
             {
                 Pause();
             }

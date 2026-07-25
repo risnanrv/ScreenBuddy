@@ -39,6 +39,7 @@ namespace ScreenBuddy.Application
 
             _timerEngine.WorkTimerExpired += OnWorkTimerExpired;
             _timerEngine.BreakTimerExpired += OnBreakTimerExpired;
+            _timerEngine.SnoozeTimerExpired += OnSnoozeTimerExpired;
         }
 
         public bool Send(SessionCommand command)
@@ -59,8 +60,12 @@ namespace ScreenBuddy.Application
                         break;
 
                     case SessionCommand.Pause:
-                        if (currentState == SessionState.Working)
+                        if (currentState is SessionState.Working or SessionState.Break or SessionState.Snoozed)
                         {
+                            if (currentState == SessionState.Break)
+                            {
+                                OnBreakEnded();
+                            }
                             _timerEngine.Pause();
                             OnSessionStateChanged(SessionState.Paused);
                             return true;
@@ -77,8 +82,12 @@ namespace ScreenBuddy.Application
                         break;
 
                     case SessionCommand.Reset:
-                        if (currentState is SessionState.Working or SessionState.Paused)
+                        if (currentState is SessionState.Working or SessionState.Paused or SessionState.Snoozed or SessionState.Break)
                         {
+                            if (currentState == SessionState.Break)
+                            {
+                                OnBreakEnded();
+                            }
                             StartWorkSessionInternal();
                             return true;
                         }
@@ -94,7 +103,35 @@ namespace ScreenBuddy.Application
                         }
                         break;
 
+                    case SessionCommand.MinimizeBreak:
+                        if (currentState == SessionState.Break)
+                        {
+                            OnBreakEnded();
+                            return true;
+                        }
+                        break;
+
+                    case SessionCommand.EmergencyEscape:
+                        if (currentState == SessionState.Break)
+                        {
+                            _timerEngine.EndBreak();
+                            OnBreakEnded();
+                            _timerEngine.Pause();
+                            OnSessionStateChanged(SessionState.Paused);
+                            return true;
+                        }
+                        else
+                        {
+                            _timerEngine.Pause();
+                            OnSessionStateChanged(SessionState.Paused);
+                            return true;
+                        }
+
                     case SessionCommand.Quit:
+                        if (currentState == SessionState.Break)
+                        {
+                            OnBreakEnded();
+                        }
                         _timerEngine.EndBreak();
                         OnSessionStateChanged(SessionState.Stopped);
                         return true;
@@ -102,6 +139,23 @@ namespace ScreenBuddy.Application
 
                 _logger?.LogWarning("Invalid command {Command} for current state {State}", command, currentState);
                 return false;
+            }
+        }
+
+        public bool Snooze(int snoozeMinutes)
+        {
+            lock (_lock)
+            {
+                if (_timerEngine.CurrentPhase != SessionState.Break)
+                {
+                    return false;
+                }
+
+                int snoozeSecs = Math.Clamp(snoozeMinutes, 1, 10) * 60;
+                OnBreakEnded();
+                _timerEngine.Snooze(snoozeSecs);
+                OnSessionStateChanged(SessionState.Snoozed);
+                return true;
             }
         }
 
@@ -151,6 +205,12 @@ namespace ScreenBuddy.Application
             }
         }
 
+        private void OnSnoozeTimerExpired(object? sender, EventArgs e)
+        {
+            // When snooze finishes, trigger a full break!
+            OnWorkTimerExpired(sender, e);
+        }
+
         private void OnSessionStateChanged(SessionState newState)
         {
             SessionStateChanged?.Invoke(this, newState);
@@ -165,6 +225,7 @@ namespace ScreenBuddy.Application
         {
             _timerEngine.WorkTimerExpired -= OnWorkTimerExpired;
             _timerEngine.BreakTimerExpired -= OnBreakTimerExpired;
+            _timerEngine.SnoozeTimerExpired -= OnSnoozeTimerExpired;
             _timerEngine.Dispose();
         }
     }

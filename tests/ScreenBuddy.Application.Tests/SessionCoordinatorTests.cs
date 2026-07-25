@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using NSubstitute;
 using ScreenBuddy.Application.Services;
@@ -70,6 +71,55 @@ namespace ScreenBuddy.Application.Tests
             success.Should().BeTrue();
             _timerEngine.Received(1).EndBreak();
             _timerEngine.Received(1).Start(1500);
+            breakEndedFired.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Snooze_WhenInBreak_SnoozesForRequestedDuration()
+        {
+            _timerEngine.CurrentPhase.Returns(SessionState.Break);
+            using var coordinator = new SessionCoordinator(_timerEngine, _settingsService, _messageLibrary);
+
+            bool breakEndedFired = false;
+            coordinator.BreakEnded += (sender, args) => breakEndedFired = true;
+
+            bool success = coordinator.Snooze(3);
+
+            success.Should().BeTrue();
+            _timerEngine.Received(1).Snooze(180);
+            breakEndedFired.Should().BeTrue();
+        }
+
+        [Fact]
+        public void MinimizeBreak_WhenInBreak_FiresBreakEndedWithoutEndingTimer()
+        {
+            _timerEngine.CurrentPhase.Returns(SessionState.Break);
+            using var coordinator = new SessionCoordinator(_timerEngine, _settingsService, _messageLibrary);
+
+            bool breakEndedFired = false;
+            coordinator.BreakEnded += (sender, args) => breakEndedFired = true;
+
+            bool success = coordinator.Send(SessionCommand.MinimizeBreak);
+
+            success.Should().BeTrue();
+            breakEndedFired.Should().BeTrue();
+            _timerEngine.DidNotReceive().EndBreak();
+        }
+
+        [Fact]
+        public void EmergencyEscape_WhenInBreak_HidesOverlaysAndPauses()
+        {
+            _timerEngine.CurrentPhase.Returns(SessionState.Break);
+            using var coordinator = new SessionCoordinator(_timerEngine, _settingsService, _messageLibrary);
+
+            bool breakEndedFired = false;
+            coordinator.BreakEnded += (sender, args) => breakEndedFired = true;
+
+            bool success = coordinator.Send(SessionCommand.EmergencyEscape);
+
+            success.Should().BeTrue();
+            _timerEngine.Received(1).EndBreak();
+            _timerEngine.Received(1).Pause();
             breakEndedFired.Should().BeTrue();
         }
 

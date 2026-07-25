@@ -28,6 +28,7 @@ namespace ScreenBuddy.Domain.Timer
         public event EventHandler<int>? TimerTick;
         public event EventHandler? WorkTimerExpired;
         public event EventHandler? BreakTimerExpired;
+        public event EventHandler? SnoozeTimerExpired;
         public event EventHandler<TimerSnapshot>? PersistStateRequested;
 
         public SessionState CurrentPhase
@@ -80,7 +81,7 @@ namespace ScreenBuddy.Domain.Timer
         {
             lock (_lock)
             {
-                if (_currentPhase != SessionState.Working || !_stopwatch.IsRunning)
+                if ((_currentPhase != SessionState.Working && _currentPhase != SessionState.Break && _currentPhase != SessionState.Snoozed) || !_stopwatch.IsRunning)
                 {
                     return;
                 }
@@ -147,6 +148,25 @@ namespace ScreenBuddy.Domain.Timer
             }
         }
 
+        public void Snooze(int snoozeDurationSeconds)
+        {
+            lock (_lock)
+            {
+                StopTimersInternal();
+
+                _totalTargetSeconds = Math.Max(1, snoozeDurationSeconds);
+                _elapsedBeforePause = 0;
+                _currentPhase = SessionState.Snoozed;
+                _lastReportedRemaining = _totalTargetSeconds;
+
+                _stopwatch.Restart();
+                StartTimersInternal();
+            }
+
+            OnTimerTick(_totalTargetSeconds);
+            OnPersistRequested();
+        }
+
         public TimerSnapshot CreateSnapshot()
         {
             lock (_lock)
@@ -168,6 +188,7 @@ namespace ScreenBuddy.Domain.Timer
 
             bool expireWork = false;
             bool expireBreak = false;
+            bool expireSnooze = false;
             int newRemaining = 0;
 
             lock (_lock)
@@ -198,6 +219,10 @@ namespace ScreenBuddy.Domain.Timer
                     {
                         expireBreak = true;
                     }
+                    else if (lastSnapshot.Phase == SessionState.Snoozed)
+                    {
+                        expireSnooze = true;
+                    }
 
                     _currentPhase = SessionState.Stopped;
                     StopTimersInternal();
@@ -223,6 +248,10 @@ namespace ScreenBuddy.Domain.Timer
             {
                 OnBreakTimerExpired();
             }
+            else if (expireSnooze)
+            {
+                OnSnoozeTimerExpired();
+            }
             else
             {
                 OnTimerTick(newRemaining);
@@ -245,6 +274,7 @@ namespace ScreenBuddy.Domain.Timer
         {
             bool workExpired = false;
             bool breakExpired = false;
+            bool snoozeExpired = false;
             int remaining = 0;
 
             lock (_lock)
@@ -270,6 +300,10 @@ namespace ScreenBuddy.Domain.Timer
                     {
                         breakExpired = true;
                     }
+                    else if (_currentPhase == SessionState.Snoozed)
+                    {
+                        snoozeExpired = true;
+                    }
                     _currentPhase = SessionState.Stopped;
                 }
             }
@@ -283,6 +317,10 @@ namespace ScreenBuddy.Domain.Timer
             else if (breakExpired)
             {
                 OnBreakTimerExpired();
+            }
+            else if (snoozeExpired)
+            {
+                OnSnoozeTimerExpired();
             }
         }
 
@@ -321,6 +359,11 @@ namespace ScreenBuddy.Domain.Timer
         private void OnBreakTimerExpired()
         {
             BreakTimerExpired?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnSnoozeTimerExpired()
+        {
+            SnoozeTimerExpired?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnPersistRequested()

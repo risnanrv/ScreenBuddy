@@ -23,6 +23,11 @@ namespace ScreenBuddy.Domain.Models
         /// <summary>
         /// Break period is active; fullscreen overlay is displayed.
         /// </summary>
-        Break = 3
+        Break = 3,
+
+        /// <summary>
+        /// Break period has been postponed (snoozed) for a brief duration.
+        /// </summary>
+        Snoozed = 4
     }
 }
