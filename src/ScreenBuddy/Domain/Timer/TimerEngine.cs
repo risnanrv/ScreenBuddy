@@ -187,7 +187,6 @@ namespace ScreenBuddy.Domain.Timer
 
                 _configuredWorkSeconds = lastSnapshot.ConfiguredWorkSeconds;
                 _configuredBreakSeconds = lastSnapshot.ConfiguredBreakSeconds;
-                _currentPhase = lastSnapshot.Phase;
 
                 if (adjustedRemaining <= 0)
                 {
@@ -200,11 +199,13 @@ namespace ScreenBuddy.Domain.Timer
                         expireBreak = true;
                     }
 
+                    _currentPhase = SessionState.Stopped;
                     StopTimersInternal();
                     _stopwatch.Reset();
                 }
                 else
                 {
+                    _currentPhase = lastSnapshot.Phase;
                     _totalTargetSeconds = lastSnapshot.Phase == SessionState.Working ? _configuredWorkSeconds : _configuredBreakSeconds;
                     _elapsedBeforePause = _totalTargetSeconds - adjustedRemaining;
                     newRemaining = adjustedRemaining;
@@ -269,6 +270,7 @@ namespace ScreenBuddy.Domain.Timer
                     {
                         breakExpired = true;
                     }
+                    _currentPhase = SessionState.Stopped;
                 }
             }
 
