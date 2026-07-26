@@ -1,32 +1,28 @@
 using System;
 using System.Drawing;
-using System.Windows;
 using System.Windows.Controls;
 using H.NotifyIcon;
 using H.NotifyIcon.Core;
 using ScreenBuddy.Application.Services;
 using ScreenBuddy.Infrastructure.Platform;
-using ScreenBuddy.Presentation.Settings;
+using ScreenBuddy.Presentation.Main;
 
 namespace ScreenBuddy.Presentation.Tray
 {
     public sealed class TrayService : ITrayService
     {
         private readonly TrayViewModel _viewModel;
-        private readonly ISettingsService _settingsService;
-        private readonly IStartupRegistrar? _startupRegistrar;
+        private readonly IMainWindowService _mainWindowService;
         private TaskbarIcon? _taskbarIcon;
 
         public TrayService(
             TrayViewModel viewModel,
-            ISettingsService settingsService,
-            IStartupRegistrar? startupRegistrar = null)
+            IMainWindowService mainWindowService)
         {
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-            _startupRegistrar = startupRegistrar;
+            _mainWindowService = mainWindowService ?? throw new ArgumentNullException(nameof(mainWindowService));
 
-            _viewModel.OpenSettingsRequested += OnOpenSettingsRequested;
+            _viewModel.OpenMainWindowRequested += OnOpenMainWindowRequested;
             _viewModel.ExitRequested += OnExitRequested;
         }
 
@@ -35,60 +31,44 @@ namespace ScreenBuddy.Presentation.Tray
             _taskbarIcon = new TaskbarIcon
             {
                 ToolTipText = "ScreenBuddy",
-                Icon = SystemIcons.Application, // Fallback icon until customized .ico loaded
+                Icon = SystemIcons.Application,
                 DataContext = _viewModel
             };
 
             var contextMenu = new ContextMenu();
 
-            var statusItem = new MenuItem
+            // 1. Open ScreenBuddy (Default bold menu item)
+            var openItem = new MenuItem
             {
-                IsEnabled = false,
-                Header = "ScreenBuddy — Ready"
+                Header = "Open ScreenBuddy",
+                FontWeight = System.Windows.FontWeights.Bold
             };
-            // Bind status header to ViewModel StatusText
-            statusItem.SetBinding(HeaderedItemsControl.HeaderProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.StatusText)));
-            contextMenu.Items.Add(statusItem);
+            openItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.OpenMainWindowCommand)));
+            contextMenu.Items.Add(openItem);
 
             contextMenu.Items.Add(new Separator());
 
-            var startItem = new MenuItem { Header = "Start Work Session" };
-            startItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.StartCommand)));
-            contextMenu.Items.Add(startItem);
-
-            var pauseItem = new MenuItem { Header = "Pause" };
-            pauseItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.PauseCommand)));
-            contextMenu.Items.Add(pauseItem);
-
-            var resumeItem = new MenuItem { Header = "Resume" };
-            resumeItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.ResumeCommand)));
-            contextMenu.Items.Add(resumeItem);
-
-            var resetItem = new MenuItem { Header = "Reset Session" };
-            resetItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.ResetCommand)));
-            contextMenu.Items.Add(resetItem);
+            // 2. Contextual Pause / Resume
+            var toggleItem = new MenuItem { Header = "Pause / Resume" };
+            toggleItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.TogglePauseResumeCommand)));
+            contextMenu.Items.Add(toggleItem);
 
             contextMenu.Items.Add(new Separator());
 
-            var settingsItem = new MenuItem { Header = "Settings..." };
-            settingsItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.OpenSettingsCommand)));
-            contextMenu.Items.Add(settingsItem);
-
-            contextMenu.Items.Add(new Separator());
-
+            // 3. Quit
             var quitItem = new MenuItem { Header = "Quit ScreenBuddy" };
             quitItem.SetBinding(MenuItem.CommandProperty, new System.Windows.Data.Binding(nameof(TrayViewModel.QuitCommand)));
             contextMenu.Items.Add(quitItem);
 
             _taskbarIcon.ContextMenu = contextMenu;
-            _taskbarIcon.LeftClickCommand = _viewModel.TogglePauseResumeCommand;
+            _taskbarIcon.LeftClickCommand = _viewModel.OpenMainWindowCommand;
+            _taskbarIcon.DoubleClickCommand = _viewModel.OpenMainWindowCommand;
             _taskbarIcon.ForceCreate();
         }
 
-        private void OnOpenSettingsRequested(object? sender, EventArgs e)
+        private void OnOpenMainWindowRequested(object? sender, EventArgs e)
         {
-            var settingsVm = new SettingsViewModel(_settingsService, _startupRegistrar);
-            SettingsWindow.ShowSingleInstance(settingsVm);
+            _mainWindowService.BringToForeground();
         }
 
         private void OnExitRequested(object? sender, EventArgs e)
@@ -98,7 +78,7 @@ namespace ScreenBuddy.Presentation.Tray
 
         public void Dispose()
         {
-            _viewModel.OpenSettingsRequested -= OnOpenSettingsRequested;
+            _viewModel.OpenMainWindowRequested -= OnOpenMainWindowRequested;
             _viewModel.ExitRequested -= OnExitRequested;
             _taskbarIcon?.Dispose();
         }

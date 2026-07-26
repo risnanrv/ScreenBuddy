@@ -112,6 +112,20 @@ namespace ScreenBuddy.Domain.Timer
             OnPersistRequested();
         }
 
+        public void Stop()
+        {
+            lock (_lock)
+            {
+                StopTimersInternal();
+                _stopwatch.Reset();
+                _currentPhase = SessionState.Stopped;
+                _elapsedBeforePause = 0;
+            }
+
+            OnTimerTick(0);
+            OnPersistRequested();
+        }
+
         public void Reset(int workDurationSeconds)
         {
             Start(workDurationSeconds);

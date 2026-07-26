@@ -81,6 +81,15 @@ namespace ScreenBuddy.Application
                         }
                         break;
 
+                    case SessionCommand.Stop:
+                        if (currentState == SessionState.Break)
+                        {
+                            OnBreakEnded();
+                        }
+                        _timerEngine.Stop();
+                        OnSessionStateChanged(SessionState.Stopped);
+                        return true;
+
                     case SessionCommand.Reset:
                         if (currentState is SessionState.Working or SessionState.Paused or SessionState.Snoozed or SessionState.Break)
                         {

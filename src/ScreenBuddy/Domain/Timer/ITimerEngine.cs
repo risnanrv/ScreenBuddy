@@ -21,6 +21,7 @@ namespace ScreenBuddy.Domain.Timer
         void Start(int workDurationSeconds);
         void Pause();
         void Resume();
+        void Stop();
         void Reset(int workDurationSeconds);
         void BeginBreak(int breakDurationSeconds);
         void EndBreak();

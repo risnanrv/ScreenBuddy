@@ -15,6 +15,7 @@ using ScreenBuddy.Infrastructure.Logging;
 using ScreenBuddy.Infrastructure.Persistence;
 using ScreenBuddy.Infrastructure.Platform;
 using ScreenBuddy.Presentation.FirstRun;
+using ScreenBuddy.Presentation.Main;
 using ScreenBuddy.Presentation.Overlay;
 using ScreenBuddy.Presentation.Tray;
 
@@ -27,16 +28,18 @@ namespace ScreenBuddy
     public partial class App : System.Windows.Application
     {
         private static Mutex? _mutex;
+        private static SingleInstanceService? _singleInstanceService;
         private const string MutexName = "ScreenBuddy_SingleInstance_Mutex_9A8B7C";
 
         public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            // 1. Single Instance Mutex Guard (ADR-008)
+            // 1. Single Instance Mutex Guard & IPC Activation Signaling
             _mutex = new Mutex(true, MutexName, out bool isFirstInstance);
             if (!isFirstInstance)
             {
+                SingleInstanceService.SignalRunningInstance();
                 Shutdown();
                 return;
             }
@@ -53,8 +56,16 @@ namespace ScreenBuddy
             ServiceProvider = services.BuildServiceProvider();
 
             // 4. Initialize Core Infrastructure & Overlay Services
+            var mainWindowService = ServiceProvider.GetRequiredService<IMainWindowService>();
             var trayService = ServiceProvider.GetRequiredService<ITrayService>();
             trayService.Initialize();
+
+            // Start Single-Instance IPC Listener
+            _singleInstanceService = new SingleInstanceService();
+            _singleInstanceService.StartListening(() =>
+            {
+                mainWindowService.BringToForeground();
+            });
 
             var overlayManager = ServiceProvider.GetRequiredService<IOverlayManager>();
             var sessionCoordinator = ServiceProvider.GetRequiredService<ISessionCoordinator>();
@@ -62,7 +73,7 @@ namespace ScreenBuddy
             var statePersister = ServiceProvider.GetRequiredService<ITimerStatePersister>();
             var powerListener = ServiceProvider.GetRequiredService<IPowerEventListener>();
 
-            // Wire State Snapshot Persistence (Phase 2 §10)
+            // Wire State Snapshot Persistence
             timerEngine.PersistStateRequested += (sender, snapshot) =>
             {
                 statePersister.Write(snapshot);
@@ -105,10 +116,9 @@ namespace ScreenBuddy
                 {
                     sessionCoordinator.HandleWakeFromSleep(recoverySnapshot);
                 }
-                else
-                {
-                    sessionCoordinator.Send(SessionCommand.Start);
-                }
+
+                // Launch MainWindow in Ready/Current state (Does NOT auto-start work session on Windows boot)
+                mainWindowService.Show();
             }
         }
 
@@ -144,7 +154,14 @@ namespace ScreenBuddy
             services.AddSingleton<ISettingsService, SettingsService>();
             services.AddSingleton<ISessionCoordinator, SessionCoordinator>();
 
-            // Presentation Services
+            // Presentation Services & ViewModels
+            services.AddTransient<MainWindowViewModel>();
+            services.AddTransient<MainWindow>();
+            services.AddSingleton<IMainWindowService>(sp =>
+            {
+                return new MainWindowService(() => sp.GetRequiredService<MainWindow>());
+            });
+
             services.AddSingleton<TrayViewModel>();
             services.AddSingleton<ITrayService, TrayService>();
             services.AddSingleton<IOverlayManager, OverlayManager>();
@@ -210,6 +227,8 @@ namespace ScreenBuddy
             {
                 // Fail-safe
             }
+
+            _singleInstanceService?.Dispose();
 
             if (_mutex != null)
             {

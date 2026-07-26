@@ -58,6 +58,34 @@ namespace ScreenBuddy.Application.Tests
         }
 
         [Fact]
+        public void Stop_WhenWorking_StopsTimerAndTransitionsToStopped()
+        {
+            _timerEngine.CurrentPhase.Returns(SessionState.Working);
+            using var coordinator = new SessionCoordinator(_timerEngine, _settingsService, _messageLibrary);
+
+            bool success = coordinator.Send(SessionCommand.Stop);
+
+            success.Should().BeTrue();
+            _timerEngine.Received(1).Stop();
+        }
+
+        [Fact]
+        public void Stop_WhenInBreak_EndsBreakAndStopsTimer()
+        {
+            _timerEngine.CurrentPhase.Returns(SessionState.Break);
+            using var coordinator = new SessionCoordinator(_timerEngine, _settingsService, _messageLibrary);
+
+            bool breakEndedFired = false;
+            coordinator.BreakEnded += (sender, args) => breakEndedFired = true;
+
+            bool success = coordinator.Send(SessionCommand.Stop);
+
+            success.Should().BeTrue();
+            _timerEngine.Received(1).Stop();
+            breakEndedFired.Should().BeTrue();
+        }
+
+        [Fact]
         public void SkipBreak_WhenInBreak_EndsBreakAndStartsWork()
         {
             _timerEngine.CurrentPhase.Returns(SessionState.Break);
@@ -133,6 +161,34 @@ namespace ScreenBuddy.Application.Tests
 
             success.Should().BeTrue();
             _timerEngine.Received(1).EndBreak();
+        }
+
+        [Fact]
+        public void WorkTimerExpired_TriggersBreakStartedAndStartsBreakInTimerEngine()
+        {
+            using var realTimer = new TimerEngine();
+            using var coordinator = new SessionCoordinator(realTimer, _settingsService, _messageLibrary);
+
+            bool breakStartedFired = false;
+            coordinator.BreakStarted += (sender, message) => breakStartedFired = true;
+
+            realTimer.Start(1);
+            System.Threading.Thread.Sleep(1500);
+
+            coordinator.CurrentState.Should().Be(SessionState.Break);
+            breakStartedFired.Should().BeTrue();
+        }
+
+        [Fact]
+        public void BreakTimerExpired_TransitionsBackToWorking_WithoutDuplicateBreakRestart()
+        {
+            using var realTimer = new TimerEngine();
+            using var coordinator = new SessionCoordinator(realTimer, _settingsService, _messageLibrary);
+
+            realTimer.BeginBreak(1);
+            System.Threading.Thread.Sleep(1500);
+
+            coordinator.CurrentState.Should().Be(SessionState.Working);
         }
     }
 }

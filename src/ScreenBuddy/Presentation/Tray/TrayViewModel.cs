@@ -19,13 +19,7 @@ namespace ScreenBuddy.Presentation.Tray
         [ObservableProperty]
         private bool _canResume;
 
-        [ObservableProperty]
-        private bool _canStart = true;
-
-        [ObservableProperty]
-        private bool _canReset;
-
-        public event EventHandler? OpenSettingsRequested;
+        public event EventHandler? OpenMainWindowRequested;
         public event EventHandler? ExitRequested;
 
         public TrayViewModel(ISessionCoordinator sessionCoordinator)
@@ -61,8 +55,6 @@ namespace ScreenBuddy.Presentation.Tray
         {
             CanPause = state is SessionState.Working or SessionState.Break or SessionState.Snoozed;
             CanResume = state == SessionState.Paused;
-            CanStart = state is SessionState.Stopped or SessionState.Paused;
-            CanReset = state is SessionState.Working or SessionState.Paused or SessionState.Snoozed;
 
             StatusText = state switch
             {
@@ -75,34 +67,26 @@ namespace ScreenBuddy.Presentation.Tray
         }
 
         [RelayCommand]
-        private void Start() => _sessionCoordinator.Send(SessionCommand.Start);
-
-        [RelayCommand]
-        private void Pause() => _sessionCoordinator.Send(SessionCommand.Pause);
-
-        [RelayCommand]
-        private void Resume() => _sessionCoordinator.Send(SessionCommand.Resume);
-
-        [RelayCommand]
-        private void Reset() => _sessionCoordinator.Send(SessionCommand.Reset);
+        private void OpenMainWindow()
+        {
+            OpenMainWindowRequested?.Invoke(this, EventArgs.Empty);
+        }
 
         [RelayCommand]
         private void TogglePauseResume()
         {
             if (_sessionCoordinator.CurrentState is SessionState.Working or SessionState.Break or SessionState.Snoozed)
             {
-                Pause();
+                _sessionCoordinator.Send(SessionCommand.Pause);
             }
             else if (_sessionCoordinator.CurrentState == SessionState.Paused)
             {
-                Resume();
+                _sessionCoordinator.Send(SessionCommand.Resume);
             }
-        }
-
-        [RelayCommand]
-        private void OpenSettings()
-        {
-            OpenSettingsRequested?.Invoke(this, EventArgs.Empty);
+            else
+            {
+                OpenMainWindowRequested?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         [RelayCommand]

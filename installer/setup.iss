@@ -1,10 +1,10 @@
 ; ScreenBuddy Inno Setup Installer Script
-; Version: 1.0.0
+; Version: 1.1.0
 
 #define MyAppName "ScreenBuddy"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "ScreenBuddy Contributors"
-#define MyAppURL "https://github.com/ScreenBuddy/ScreenBuddy"
+#define MyAppURL "https://github.com/risnanrv/ScreenBuddy"
 #define MyAppExeName "ScreenBuddy.exe"
 
 [Setup]
@@ -20,7 +20,9 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 OutputDir=..\publish\installer
-OutputBaseFilename=ScreenBuddy-Setup-1.0.0
+OutputBaseFilename=ScreenBuddy-Setup-1.1.0
+SetupIconFile=..\src\ScreenBuddy\Resources\Icon\app.ico
+UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -38,8 +40,8 @@ Name: "autostart"; Description: "Launch ScreenBuddy automatically when Windows s
 Source: "..\publish\ScreenBuddy.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "ScreenBuddy"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletevalue; Tasks: autostart

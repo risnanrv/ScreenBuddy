@@ -21,6 +21,11 @@ namespace ScreenBuddy.Application
         Resume,
 
         /// <summary>
+        /// Stops the session, cancels all active timers/breaks, and transitions to Stopped state.
+        /// </summary>
+        Stop,
+
+        /// <summary>
         /// Resets the work session back to full duration.
         /// </summary>
         Reset,
