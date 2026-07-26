@@ -41,15 +41,18 @@ jobs:
       - name: Generate SHA-256 Checksums
         shell: powershell
         run: |
-          $hash = (Get-FileHash publish/installer/ScreenBuddy-Setup-1.0.0.exe -Algorithm SHA256).Hash
-          "$hash  ScreenBuddy-Setup-1.0.0.exe" | Out-File -FilePath publish/installer/ScreenBuddy-Setup-1.0.0.exe.sha256 -Encoding ascii
+          $installer = Get-ChildItem -Path publish/installer/*.exe | Select-Object -First 1
+          if (-not $installer) { throw "Installer executable not found in publish/installer/" }
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash
+          "$hash  $($installer.Name)" | Out-File -FilePath "$($installer.FullName).sha256" -Encoding ascii
+          Write-Host "Generated SHA256 checksum for $($installer.Name): $hash"
 
       - name: Create Draft GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           files: |
-            publish/installer/ScreenBuddy-Setup-1.0.0.exe
-            publish/installer/ScreenBuddy-Setup-1.0.0.exe.sha256
+            publish/installer/*.exe
+            publish/installer/*.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
